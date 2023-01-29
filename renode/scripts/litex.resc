@@ -1,0 +1,17 @@
+using sysbus
+mach create
+machine LoadPlatformDescription @scripts/platform.repl
+
+showAnalyzer uart
+
+sysbus LoadBinary @bins/Image 0x40000000
+sysbus LoadBinary @bins/rv32.dtb 0x40ef0000
+sysbus LoadBinary @bins/opensbi.bin 0x40f00000
+sysbus LoadBinary @bins/rootfs.cpio 0x42000000
+
+virtio LoadImage @bins/drive.img true
+
+cpu PC 0x40f00000
+
+machine StartGdbServer 3333
+

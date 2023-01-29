@@ -1,0 +1,39 @@
+	export ARCH=riscv
+	export CROSS_COMPILE=riscv64-linux-gnu-	
+	clear	
+	cd ~/linux
+	rm ~/linux/arch/riscv/boot/Image
+	make -j$(nproc)
+	make modules -j$(nproc)
+	sudo make modules_install
+	sudo make headers_install ARCH=riscv INSTALL_HDR_PATH=/usr
+	rm ~/renode_portable/bins/Image
+	cp ~/linux/arch/riscv/boot/Image ~/renode_portable/bins/
+	cd ~/buildroot/output/host/bin 
+	./riscv32-linux-gcc ~/renode_portable/bins/ioctl_app.c -I/home/debian/linux/drivers/misc -march=rv32g -mabi=ilp32 -o ioctl_app.o
+	cd ~/renode_portable/bins
+	rm rv32.dtb
+	sudo dtc -I dts -O dtb -o rv32.dtb rv32.dts
+ 	sudo chmod a+rwx rv32.dtb
+	rm ~/renode_portable/bins/rootfs -r
+	mkdir rootfs && cd rootfs
+	cd ~/renode_portable/bins/rootfs
+	cat ../rootfs.cpio | cpio -idmv
+	cp ~/linux/drivers/misc/my_driver.ko ~/renode_portable/bins/rootfs/root
+	cp ../my_driver.ko root/
+	cp ~/buildroot/output/host/bin/ioctl_app.o  ~/renode_portable/bins/rootfs/root
+	find . | cpio -o -H newc -R root:root > ../rootfs.cpio
+	cd ~/linux
+	 	
+
+insmod my_driver.ko
+mknod /dev/my_driver c 140 0
+cat /sys/bus/iio/devices/iio\:device0/in_temp_raw
+
+litespi0.maximtemp Temperature 125
+
+
+
+
+
+
